@@ -2,93 +2,7 @@
 
 My learning journey through DataCamp's **Introduction to APIs in Python** course, with notes, code snippets and runnable scripts for every chapter.
 
-> **Status:** Chapter 1 in progress
-
-## Table of Contents
-
-- [Introduction to APIs in Python](#introduction-to-apis-in-python)
-  - [Table of Contents](#table-of-contents)
-  - [Project Structure](#project-structure)
-  - [Getting Started](#getting-started)
-  - [Course Introduction](#course-introduction)
-    - [What is an API?](#what-is-an-api)
-    - [Web APIs, clients and servers](#web-apis-clients-and-servers)
-    - [Types of Web APIs](#types-of-web-apis)
-    - [urllib vs requests](#urllib-vs-requests)
-  - [Chapter 1: Making API Requests with Python](#chapter-1-making-api-requests-with-python)
-  - [Chapter 2: More API Request Concepts](#chapter-2-more-api-request-concepts)
-  - [Acknowledgements](#acknowledgements)
-
-## Project Structure
-
-```
-intro-apis-python/
-├── README.md
-├── requirements.txt
-├── .gitignore
-└── chapter_01_making_api_requests/
-    └── 01_urllib_vs_requests.py
-```
-
-## Getting Started
-
-```bash
-git clone https://github.com/Daniel059/intro-apis-python.git
-cd intro-apis-python
-python -m venv .venv
-source .venv/bin/activate      # Windows PowerShell: .venv\Scripts\activate
-pip install -r requirements.txt
-python chapter_01_making_api_requests/01_urllib_vs_requests.py
-```
-
-## Course Introduction
-
-### What is an API?
-**API** = *Application Programming Interface*: a set of rules that lets two systems communicate to exchange or manipulate data. We rarely touch APIs directly (we use UIs), but they are everywhere. Example: clicking "Send" in an email app makes it call an API on the email server.
-
-### Web APIs, clients and servers
-Web APIs let two applications communicate over a network using **HTTP**, the same protocol browsers use. A **client** sends a request; the **server** sends back a response.
-
-```
-Client  ── HTTP request ──▶  Server
-Client  ◀─ HTTP response ──  Server
-```
-
-### Types of Web APIs
-
-| Type | Characteristics | Typical use |
-|------|-----------------|-------------|
-| **SOAP** | Formal, strict protocols, robust | Enterprise applications |
-| **REST** | Simple, scalable, easy to integrate (most popular) | General web services |
-| **GraphQL** | Precise, flexible queries; minimal data transfer | Performance-sensitive apps |
-
-This course focuses on **REST**.
-
-### urllib vs requests
-
-- `urllib` ships with Python and is powerful, but needs more steps.
-- `requests` is a third-party package that does the same with far less code.
-
-```python
-# urllib: send, read, decode
-import urllib.request
-
-with urllib.request.urlopen(url) as response:
-    data = response.read().decode("utf-8")
-print(data)
-```
-
-```python
-# requests: one call, text is already decoded
-import requests
-
-response = requests.get(url)
-print(response.text)
-```# Introduction to APIs in Python
-
-My learning journey through DataCamp's **Introduction to APIs in Python** course, with notes, code snippets and runnable scripts for every chapter.
-
-> **Status:** Chapter 1 in progress (lessons 1-2 done)
+> **Status:** Chapter 1 in progress (lessons 1-3 done)
 
 ## Table of Contents
 
@@ -107,7 +21,8 @@ intro-apis-python/
 ├── .gitignore
 └── chapter_01_making_api_requests/
     ├── 01_urllib_vs_requests.py
-    └── 02_anatomy_of_a_request.py
+    ├── 02_anatomy_of_a_request.py
+    └── 03_headers_and_status_codes.py
 ```
 
 ## Getting Started
@@ -120,6 +35,7 @@ source .venv/bin/activate      # Windows PowerShell: .venv\Scripts\activate
 pip install -r requirements.txt
 python chapter_01_making_api_requests/01_urllib_vs_requests.py
 python chapter_01_making_api_requests/02_anatomy_of_a_request.py
+python chapter_01_making_api_requests/03_headers_and_status_codes.py
 ```
 
 ## Course Introduction
@@ -239,22 +155,79 @@ Full code: [`02_anatomy_of_a_request.py`](chapter_01_making_api_requests/02_anat
 
 > JSONPlaceholder accepts POST, PUT and DELETE but doesn't actually store changes, so it's safe to practise on.
 
-*Coming next:* creating and deleting resources, headers and status codes.
+### Lesson 3: Headers and status codes
 
-## Chapter 2: More API Request Concepts
+#### Request and response message anatomy
+Request and response messages share the same structure of three parts:
 
-*Coming later:* authentication (Basic, API key), JSON handling, error handling, rate limits.
+1. **Start-line**: the *request-line* in a request (request type such as `GET` or `POST`, plus the path) or the *status-line* in a response (a three-digit status code and a status message)
+2. **Headers**: key-value pairs describing the message or data
+3. **Body**: the data being sent or received
 
-## Acknowledgements
-Course: [Introduction to APIs in Python](https://campus.datacamp.com/courses/introduction-to-apis-in-python/making-api-requests-with-python) by Chris Ramakers on DataCamp.
+```
+GET /posts/1 HTTP/1.1            <- request-line
+Accept: application/json         <- header
+                                 <- (no body for GET)
 
-Full code: [`01_urllib_vs_requests.py`](chapter_01_making_api_requests/01_urllib_vs_requests.py)
+HTTP/1.1 200 OK                  <- status-line
+Content-Type: application/json   <- header
+{ "id": 1, ... }                 <- body
+```
 
-> The course uses a hosted music catalog API that only works inside DataCamp, so the scripts here use [JSONPlaceholder](https://jsonplaceholder.typicode.com) as a public stand-in.
+#### Status codes
+There are over 70 status codes, grouped into five categories:
 
-## Chapter 1: Making API Requests with Python
+| Range | Category |
+|-------|----------|
+| 1xx | Informational |
+| 2xx | Success |
+| 3xx | Redirection |
+| 4xx | Client error |
+| 5xx | Server error |
 
-*Coming next:* using `requests`, anatomy of a request, HTTP verbs, URL parameters, creating/deleting resources, headers and status codes.
+The three most important to remember:
+
+| Code | Meaning |
+|------|---------|
+| `200 OK` | The server processed the request correctly |
+| `404 Not Found` | The requested resource doesn't exist |
+| `500 Internal Server Error` | An error occurred on the server |
+
+Full list: [MDN status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+
+#### Headers
+Headers are key-value pairs separated by a colon (`key: value`). The key is case-insensitive. They describe things like the type of content being sent or when a resource was last modified.
+
+**Content negotiation:** client and server agree on a format using headers. The client sends `Accept` to say what it can handle, and the server replies with `Content-Type` to say what it actually sent.
+
+#### Headers with `requests`
+
+```python
+# Send request headers with the headers parameter (a dictionary)
+headers = {"Accept": "application/json"}
+response = requests.get(url, headers=headers)
+
+# Read response headers: response.headers is a dictionary-like object
+print(response.headers["Content-Type"])      # square brackets
+print(response.headers.get("Content-Type"))  # .get() returns None if missing
+```
+
+#### Status codes with `requests`
+
+```python
+response = requests.get(url)
+print(response.status_code)  # e.g. 200
+
+# requests.codes is a lookup object so you don't need to memorise numbers
+if response.status_code == requests.codes.ok:
+    print("Success")
+
+print(requests.codes.not_found)  # 404
+```
+
+Full code: [`03_headers_and_status_codes.py`](chapter_01_making_api_requests/03_headers_and_status_codes.py)
+
+*Coming next:* exercises on response codes, request/response headers and handling content-type errors.
 
 ## Chapter 2: More API Request Concepts
 
