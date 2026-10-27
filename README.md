@@ -2,7 +2,7 @@
 
 My learning journey through DataCamp's **Introduction to APIs in Python** course, with notes, code snippets and runnable scripts for every chapter.
 
-> **Status:** Chapter 1 in progress (lessons 1-3 done)
+> **Status:** Chapter 1 lessons 1-3 done; Chapter 2 in progress (lesson 1 done)
 
 ## Table of Contents
 
@@ -19,10 +19,12 @@ intro-apis-python/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-└── chapter_01_making_api_requests/
-    ├── 01_urllib_vs_requests.py
-    ├── 02_anatomy_of_a_request.py
-    └── 03_headers_and_status_codes.py
+├── chapter_01_making_api_requests/
+│   ├── 01_urllib_vs_requests.py
+│   ├── 02_anatomy_of_a_request.py
+│   └── 03_headers_and_status_codes.py
+└── chapter_02_more_api_request_concepts/
+    └── 01_api_authentication.py
 ```
 
 ## Getting Started
@@ -36,6 +38,7 @@ pip install -r requirements.txt
 python chapter_01_making_api_requests/01_urllib_vs_requests.py
 python chapter_01_making_api_requests/02_anatomy_of_a_request.py
 python chapter_01_making_api_requests/03_headers_and_status_codes.py
+python chapter_02_more_api_request_concepts/01_api_authentication.py
 ```
 
 ## Course Introduction
@@ -231,7 +234,60 @@ Full code: [`03_headers_and_status_codes.py`](chapter_01_making_api_requests/03_
 
 ## Chapter 2: More API Request Concepts
 
-*Coming later:* authentication (Basic, API key), JSON handling, error handling, rate limits.
+### Lesson 1: API Authentication
+
+#### Why authenticate?
+APIs often hold private or sensitive data, so they require clients to prove who they are. Without credentials, a protected API answers with **`401 Unauthorized`**. Once the request identifies us, the server responds normally with **`200 OK`**.
+
+#### Authentication methods
+
+| Method | How it works | Notes |
+|--------|--------------|-------|
+| **Basic** | Username and password | Simplest, but least secure: credentials are only base64-encoded, not encrypted |
+| **API key / token** | A unique key or token attached to every request | Simple, but a risk if the key is compromised |
+| **JWT** (JSON Web Token) | Like an API key, but with a limited lifespan and can carry extra encoded data, such as user info | Expires automatically |
+| **OAuth 2.0** | Framework for fine-grained access without sharing credentials | Most comprehensive |
+
+Which method to use depends on the API server, so check the API's documentation. This lesson covers Basic and API key authentication with `requests`.
+
+#### Basic authentication
+Basic auth sends an `Authorization` header with a base64-encoded `username:password`. Base64 is a two-way encoding that anyone can decode, so it adds **no security** on its own. With `requests` you don't build the header yourself: pass a tuple to the `auth` argument.
+
+```python
+response = requests.get(url, auth=("username", "password"))
+print(response.status_code)  # 200 if the credentials are valid, 401 if not
+```
+
+What `requests` does behind the scenes:
+
+```python
+import base64
+
+credentials = base64.b64encode(b"username:password").decode("utf-8")
+headers = {"Authorization": f"Basic {credentials}"}
+```
+
+#### API key / token authentication
+There are two common ways to send the token:
+
+```python
+# Option 1: as a query parameter
+response = requests.get(url, params={"access_token": api_key})
+
+# Option 2 (usually preferred): in an Authorization header
+headers = {"Authorization": f"Bearer {api_key}"}
+response = requests.get(url, headers=headers)
+```
+
+`requests` has no built-in helper for the header option, so we add it ourselves with `headers`. The exact header format (`Bearer ...`, `Token ...`) comes from the API's documentation.
+
+> **Security tip:** never hardcode real passwords or keys in your code or commit them to GitHub. Read them from environment variables (`os.environ.get("API_KEY")`) instead. The `.gitignore` in this repo already excludes `.env` files.
+
+Full code: [`01_api_authentication.py`](chapter_02_more_api_request_concepts/01_api_authentication.py)
+
+> The course's album API only works inside DataCamp, so the script uses [httpbin.org](https://httpbin.org), a public testing service, as a stand-in.
+
+*Coming later:* working with JSON data, error handling, and rate limits.
 
 ## Acknowledgements
 Course: [Introduction to APIs in Python](https://campus.datacamp.com/courses/introduction-to-apis-in-python/making-api-requests-with-python) by Chris Ramakers on DataCamp.
