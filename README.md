@@ -2,7 +2,7 @@
 
 My learning journey through DataCamp's **Introduction to APIs in Python** course, with notes, code snippets and runnable scripts for every chapter.
 
-> **Status:** Chapter 1 lessons 1-3 done; Chapter 2 in progress (lesson 1 done)
+> **Status:** Chapter 1 lessons 1-3 done; Chapter 2 in progress (lessons 1-2 done)
 
 ## Table of Contents
 
@@ -24,7 +24,8 @@ intro-apis-python/
 │   ├── 02_anatomy_of_a_request.py
 │   └── 03_headers_and_status_codes.py
 └── chapter_02_more_api_request_concepts/
-    └── 01_api_authentication.py
+    ├── 01_api_authentication.py
+    └── 02_working_with_json.py
 ```
 
 ## Getting Started
@@ -39,6 +40,7 @@ python chapter_01_making_api_requests/01_urllib_vs_requests.py
 python chapter_01_making_api_requests/02_anatomy_of_a_request.py
 python chapter_01_making_api_requests/03_headers_and_status_codes.py
 python chapter_02_more_api_request_concepts/01_api_authentication.py
+python chapter_02_more_api_request_concepts/02_working_with_json.py
 ```
 
 ## Course Introduction
@@ -287,7 +289,60 @@ Full code: [`01_api_authentication.py`](chapter_02_more_api_request_concepts/01_
 
 > The course's album API only works inside DataCamp, so the script uses [httpbin.org](https://httpbin.org), a public testing service, as a stand-in.
 
-*Coming later:* working with JSON data, error handling, and rate limits.
+### Lesson 2: Working with structured data (JSON)
+
+#### Why structured data?
+Simple APIs can return plain, unstructured text (like song lyrics). Complex things like music albums have several properties (ID, title, artist, list of tracks), so they need a structured format.
+
+#### JSON
+**JSON** (JavaScript Object Notation) is the most common web API format: lightweight, natively supported by many languages, and readable by both humans and machines. It is one kind of **content type** (also called mime-type or media-type). Others you may meet: XML, CSV and YAML.
+
+#### From Python to JSON and back
+- **Encoding**: Python object -> JSON string, so it can be transmitted safely
+- **Decoding**: JSON string -> Python object
+
+```python
+import json
+
+album = {"id": 1, "title": "Greatest Hits", "tracks": ["Intro", "Song A"]}
+
+json_text = json.dumps(album)       # encode: dict -> str
+python_obj = json.loads(json_text)  # decode: str -> dict
+```
+
+| Function | Direction |
+|----------|-----------|
+| `json.dumps()` | Python object -> JSON string |
+| `json.loads()` | JSON string -> Python object |
+
+#### Requesting JSON data
+Without extra headers a server may reply in plain text. Adding an `Accept: application/json` header asks for JSON. `response.text` holds the raw JSON text, and `response.json()` decodes it into a Python object.
+
+```python
+headers = {"Accept": "application/json"}
+response = requests.get(url, headers=headers)
+
+print(response.text)      # raw JSON string
+data = response.json()    # decoded into a Python dict
+print(data["title"])
+```
+
+#### Sending JSON data
+Pass the object with the `json=` argument. `requests` encodes it to JSON **and** adds the `Content-Type: application/json` header automatically.
+
+```python
+playlist = {"name": "Road trip", "tracks": ["Song A", "Song B"], "public": True}
+
+response = requests.post(url, json=playlist)
+print(response.request.headers["Content-Type"])  # application/json
+print(response.request.body)                     # the encoded JSON
+```
+
+`data=` vs `json=`: `data=` sends form-encoded data (`name=Road+trip&...`) with a different content type, so use `json=` when the API expects JSON.
+
+Full code: [`02_working_with_json.py`](chapter_02_more_api_request_concepts/02_working_with_json.py)
+
+*Coming later:* error handling and rate limits.
 
 ## Acknowledgements
 Course: [Introduction to APIs in Python](https://campus.datacamp.com/courses/introduction-to-apis-in-python/making-api-requests-with-python) by Chris Ramakers on DataCamp.
