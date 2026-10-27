@@ -1,5 +1,5 @@
 """
-Chapter 1 - Lesson 2: The basic anatomy of an API request
+Chapter 1 - Lesson 2: The basic anatomy of an API request.
 
 Covers:
   - the 5 components of a URL (protocol, domain, port, path, query)
