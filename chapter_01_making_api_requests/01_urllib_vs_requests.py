@@ -1,5 +1,5 @@
 """
-Chapter 1 - Lesson 1: Introduction to APIs
+Chapter 1 - Lesson 1: Introduction to APIs.
 Compare urllib (standard library) with requests (third-party) for a simple GET.
 
 Note: the DataCamp course uses its own hosted "music catalog" API. That API only
