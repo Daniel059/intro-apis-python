@@ -1,5 +1,5 @@
 """
-Chapter 1 - Lesson 3: Headers and status codes
+Chapter 1 - Lesson 3: Headers and status codes.
 
 Covers:
   - request/response message anatomy (start-line, headers, body)
