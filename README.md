@@ -2,7 +2,6 @@
 
 My study notes and practice code from DataCamp's *Introduction to APIs in Python* course. Each lesson has a short write-up here and a runnable script in the repo. The notes are in my own words, and the code is rewritten to run against free public APIs so anyone can try it.
 
-**Status:** course completed ✅
 
 ## Contents
 
