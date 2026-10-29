@@ -2,7 +2,7 @@
 
 My learning journey through DataCamp's **Introduction to APIs in Python** course, with notes, code snippets and runnable scripts for every chapter.
 
-> **Status:** Chapter 1 lessons 1-3 done; Chapter 2 in progress (lessons 1-2 done)
+> **Status:** Chapter 1 lessons 1-3 done; Chapter 2 in progress (lessons 1-3 done)
 
 ## Table of Contents
 
@@ -25,7 +25,8 @@ intro-apis-python/
 │   └── 03_headers_and_status_codes.py
 └── chapter_02_more_api_request_concepts/
     ├── 01_api_authentication.py
-    └── 02_working_with_json.py
+    ├── 02_working_with_json.py
+    └── 03_error_handling.py
 ```
 
 ## Getting Started
@@ -41,6 +42,7 @@ python chapter_01_making_api_requests/02_anatomy_of_a_request.py
 python chapter_01_making_api_requests/03_headers_and_status_codes.py
 python chapter_02_more_api_request_concepts/01_api_authentication.py
 python chapter_02_more_api_request_concepts/02_working_with_json.py
+python chapter_02_more_api_request_concepts/03_error_handling.py
 ```
 
 ## Course Introduction
@@ -342,7 +344,57 @@ print(response.request.body)                     # the encoded JSON
 
 Full code: [`02_working_with_json.py`](chapter_02_more_api_request_concepts/02_working_with_json.py)
 
-*Coming later:* error handling and rate limits.
+### Lesson 3: Error handling
+
+Things can go wrong when talking to a web API over the internet, so our code should handle failures gracefully.
+
+#### Error status codes
+A `4XX` or `5XX` status code in the response signals a problem.
+
+| Range | Meaning | Cause | Who fixes it |
+|-------|---------|-------|--------------|
+| **4XX** | Client error: the request could not be handled | Wrong header, failed authentication, bad URL | The client, by fixing the request |
+| **5XX** | Server error: the server acknowledged the request but struggled | Server overload, configuration errors | Not the client, but our code should handle it to avoid bugs |
+
+Common examples:
+
+| Code | Meaning | What to do |
+|------|---------|------------|
+| `401` | Protected resource, we need to authenticate | Add authentication to the request |
+| `404` | Resource doesn't exist on the server | Fix the URL or resource |
+| `429` | Too many requests | Add a rate limiter to spread requests over a longer period |
+| `500` | Internal Server Error (catch-all) | Handle gracefully |
+| `502`, `504` | Server infrastructure problems | Handle gracefully |
+
+#### Handling errors
+**Simple approach:** check the status code.
+
+```python
+response = requests.get(url)
+if response.status_code >= 400:
+    print("Something went wrong:", response.status_code)
+```
+
+This is oversimplified. A request can fail *before* reaching the server, in which case there is no response and no status code. `requests` raises a `ConnectionError` instead, which we catch with `try/except`. A proper solution combines both checks.
+
+#### `raise_for_status()`
+Call it right after sending the request. Any 4XX or 5XX response then raises an `HTTPError`.
+
+```python
+try:
+    response = requests.get(url, timeout=10)
+    response.raise_for_status()
+except requests.exceptions.ConnectionError:
+    print("Could not reach the server")
+except requests.exceptions.HTTPError as err:
+    print("HTTP error:", err.response.status_code)
+```
+
+> `timeout=10` isn't in the lesson, but it is good practice: without it, a request can wait indefinitely for a server that never answers.
+
+Full code: [`03_error_handling.py`](chapter_02_more_api_request_concepts/03_error_handling.py)
+
+*Coming later:* respecting API rate limits.
 
 ## Acknowledgements
 Course: [Introduction to APIs in Python](https://campus.datacamp.com/courses/introduction-to-apis-in-python/making-api-requests-with-python) by Chris Ramakers on DataCamp.
